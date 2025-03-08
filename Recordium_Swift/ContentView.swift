@@ -8,54 +8,53 @@
 import SwiftUI
 import SwiftData
 
+/// 主内容视图 - 应用的主入口视图
+/// 目前用于测试数据模型关联关系
 struct ContentView: View {
+    // MARK: - 环境属性
+    
+    /// SwiftData模型上下文
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    
+    // MARK: - 状态属性
+    
+    /// 当前选中的标签页
+    @State private var selectedTab: Tab = .home
+    
+    // MARK: - 视图主体
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        TabView(selection: $selectedTab) {
+            // 首页标签页 - 用于测试数据模型关系
+            ModelTestView()
+                .tabItem {
+                    Label("模型测试", systemImage: "house.fill")
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                .tag(Tab.home)
+            
+            // 个人资料标签页 - 暂未实现
+            Text("个人资料页面 - 待实现")
+                .tabItem {
+                    Label("我的", systemImage: "person.fill")
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+                .tag(Tab.profile)
         }
     }
 }
 
+/// 标签页枚举
+enum Tab {
+    case home
+    case profile
+}
+
 #Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: User.self, Space.self, RecordBox.self, Album.self, UserSettings.self,
+        configurations: config
+    )
+    
+    return ContentView()
+        .modelContainer(container)
 }
