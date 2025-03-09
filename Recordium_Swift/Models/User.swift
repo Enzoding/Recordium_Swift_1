@@ -36,7 +36,7 @@ final class User {
     /// 用户信息最后更新时间
     var updatedAt: Date
     
-    // MARK: - 关系
+    // MARK: - 关系1
     
     /// 用户拥有的所有Space
     @Relationship(deleteRule: .cascade) var spaces: [Space] = []
